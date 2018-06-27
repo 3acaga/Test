@@ -1,0 +1,61 @@
+$size: 50px;
+
+.table {
+  border: 1px solid #4DABE4;
+  overflow: hidden;
+  margin: $size + 5;
+  background-color: white;
+
+  & > tbody > tr > * {
+    width: $size;
+    height: $size;
+    background-color: #4DABE4;
+  }
+}
+
+.btn {
+
+  &-add {
+    width: $size;
+    height: $size;
+    background-color: #B00100;
+  }
+}
+
+#wrapper {
+  background-color: white;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.btn-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  background-color: #F1A417;
+  transition: 0.6s all ease;
+  color: white;
+  font-size: 1.8em;
+  font-weight: bold;
+
+  &:hover {
+    background-color: #F5BF5C;
+  }
+}
+
+.btn-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  background-color: #B00100;
+  transition: 0.6s all ease;
+  color: white;
+  font-size: 1.8em;
+  font-weight: bold;
+
+  &:hover {
+    background-color: #C84D4C;
+  }
+}
