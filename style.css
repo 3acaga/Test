@@ -1,3 +1,9 @@
+#wrapper {
+  background-color: white;
+  overflow: hidden;
+  display: inline-block;
+  position: relative; }
+
 .table {
   border: 1px solid #4DABE4;
   overflow: hidden;
@@ -8,15 +14,19 @@
     height: 50px;
     background-color: #4DABE4; }
 
-.btn-add {
-  width: 50px;
-  height: 50px;
-  background-color: #B00100; }
-
-#wrapper {
-  background-color: white;
-  overflow: hidden;
-  display: inline-block; }
+.btn-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  background-color: #B00100;
+  transition: all 0.6s ease;
+  color: white;
+  font-size: 1.8em;
+  font-weight: bold;
+  cursor: pointer; }
+  .btn-remove:hover {
+    background-color: #C84D4C; }
 
 .btn-add {
   display: flex;
@@ -24,24 +34,12 @@
   justify-content: center;
   position: absolute;
   background-color: #F1A417;
-  transition: 0.6s all ease;
+  transition: all 0.6s ease;
   color: white;
   font-size: 1.8em;
-  font-weight: bold; }
+  font-weight: bold;
+  cursor: pointer; }
   .btn-add:hover {
     background-color: #F5BF5C; }
-
-.btn-remove {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  background-color: #B00100;
-  transition: 0.6s all ease;
-  color: white;
-  font-size: 1.8em;
-  font-weight: bold; }
-  .btn-remove:hover {
-    background-color: #C84D4C; }
 
 /*# sourceMappingURL=style.css.map */

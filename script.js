@@ -1,66 +1,111 @@
 window.onload = () => {
 	
+	showAddColumnButton();
+	showAddRowButton();
+	
 	const tds = document.querySelectorAll(".table td");
 	tds.forEach((td) => td.addEventListener("mouseover", showButtons));
 };
 
-function showButtons(e) {
-	showAddRowButton(e);
-	showAddColumnButton(e);
+const showButtons = (() => {
+	let rowIndex, colIndex;
+	let deleteRowBtn, DeleteColBtn;
+	let timeout;
 	
-	if(e.target.parentNode.parentNode.children.length > 1) {
-		showDeleteRowButton(e);
+	return (e) => {
+		clearInterval(timeout);
+		
+		if(e.target.parentNode.parentNode.children.length > 1) {
+			
+			if(rowIndex !== e.target.parentNode.rowIndex) {
+				//row changed
+				try {
+					hideButton(deleteRowBtn);
+				} catch(e) {}
+				
+				rowIndex = e.target.parentNode.rowIndex;
+				deleteRowBtn = showDeleteRowButton(e, rowIndex);
+				
+			}
+		}
+		
+		if(e.target.parentNode.cells.length > 1) {
+			//coll changed
+			if(colIndex !== e.target.cellIndex) {
+				try {
+					hideButton(DeleteColBtn);
+				} catch(e) {}
+				
+				colIndex = e.target.cellIndex;
+				DeleteColBtn = showDeleteColumnButton(e, colIndex);
+				
+			}
+		}
+		
+		timeout = setInterval(() => {
+			hideButton(deleteRowBtn);
+			hideButton(DeleteColBtn);
+			rowIndex = colIndex = undefined;
+		}, 2000);
 	}
-	
-	if(e.target.parentNode.cells.length > 1) {
-		showDeleteColumnButton(e);
-	}
-}
+})();
 
-function showAddColumnButton(e) {
-	e.stopImmediatePropagation();
-	
+function showAddColumnButton() {
 	const table = document.querySelector(".table");
-	const width = document.querySelector(".table td").offsetWidth;
-	const height = document.querySelector(".table td").offsetHeight;
-	const button = document.createElement("div");
 	
-	Object.assign(button.style, {
-		width: `${width}px`,
-		height: `${height}px`,
-		left: `${table.offsetLeft + table.offsetWidth + 1}px`,
-		top: `${table.offsetTop + e.target.offsetTop + 1}px`,
-		opacity: 0
-	});
+	const button = document.createElement("div");
 	button.appendChild(document.createTextNode("+"));
 	button.classList.add("btn-add");
 	button.addEventListener("click", addColumn);
-	mountButton(button, e.target);
-}
-
-function showAddRowButton(e) {
-	e.stopImmediatePropagation();
 	
-	const table = document.querySelector(".table");
-	const width = document.querySelector(".table td").offsetWidth;
-	const height = document.querySelector(".table td").offsetHeight;
-	const button = document.createElement("div");
+	document.getElementById("wrapper").appendChild(button);
+	
+	const tstyle = getComputedStyle(table);
+	const td = table.querySelector("td");
 	
 	Object.assign(button.style, {
-		width: `${width}px`,
-		height: `${height}px`,
-		left: `${table.offsetLeft + e.target.offsetLeft + 1}px`,
-		top: `${table.offsetTop + table.offsetHeight + 1}px`,
-		opacity: 0
+		right: `${parseInt(tstyle.marginRight) -
+							td.offsetWidth -
+							parseInt(tstyle.borderSpacing.split(" ")[0])
+						}px`,
+		top: `${parseInt(tstyle.marginTop) +
+						parseInt(tstyle.borderTopWidth) +
+						parseInt(tstyle.borderSpacing.split(" ")[1])
+					}px`,
+		width: td.offsetWidth + "px",
+		height: td.offsetHeight + "px"
 	});
+}
+
+function showAddRowButton() {
+	const table = document.querySelector(".table");
+	
+	const button = document.createElement("div");
 	button.appendChild(document.createTextNode("+"));
 	button.classList.add("btn-add");
 	button.addEventListener("click", addRow);
-	mountButton(button, e.target);
+	
+	document.getElementById("wrapper").appendChild(button);
+	
+	const tstyle = getComputedStyle(table);
+	const td = table.querySelector("td");
+	
+	Object.assign(button.style, {
+		bottom: `${	parseInt(tstyle.marginBottom) -
+								td.offsetHeight -
+								parseInt(tstyle.borderSpacing.split(" ")[0])
+							}px`,
+		left: `${	parseInt(tstyle.marginLeft) +
+							parseInt(tstyle.borderLeftWidth) +
+							parseInt(tstyle.borderSpacing.split(" ")[1])
+						}px`,
+		width: td.offsetWidth + "px",
+		height: td.offsetHeight + "px"
+	});
 }
 
-function showDeleteColumnButton(e) {
-	e.stopImmediatePropagation();
+function showDeleteColumnButton(e, colIndex = -1) {
+	e.stopPropagation();
 	
 	const table = document.querySelector(".table");
 	const width = document.querySelector(".table td").offsetWidth;
@@ -72,16 +117,28 @@ function showDeleteColumnButton(e) {
 		height: `${height}px`,
 		left: `${table.offsetLeft + e.target.offsetLeft + 1}px`,
 		top: `${table.offsetTop - e.target.offsetHeight - 1}px`,
-		opacity: 0
+		opacity: "0"
 	});
-	button.appendChild(document.createTextNode("-"));
 	button.classList.add("btn-remove");
-	button.addEventListener("click", (e2) => deleteColumn(e2, e.target.cellIndex));
-	mountButton(button, e.target);
+	button.appendChild(document.createTextNode("-"));
+	
+	document.getElementById("wrapper").appendChild(button);
+	setTimeout(() => button.style.opacity = 1, 0);
+	
+	button.addEventListener("click", (e2) => {
+		if(	colIndex >= table.querySelector("tr").children.length - 1 ||
+				table.querySelector("tr").children.length - 1 === 1) {
+			
+			button.parentNode.removeChild(button);
+		}
+		deleteColumn(e2, colIndex);
+	});
+	
+	return button;
 }
 
-function showDeleteRowButton(e) {
-	e.stopImmediatePropagation();
+function showDeleteRowButton(e, rowIndex = -1) {
+	e.stopPropagation();
 	
 	const table = document.querySelector(".table");
 	const width = document.querySelector(".table td").offsetWidth;
@@ -95,54 +152,37 @@ function showDeleteRowButton(e) {
 		top: `${table.offsetTop + e.target.offsetTop + 1}px`,
 		opacity: 0
 	});
-	button.appendChild(document.createTextNode("-"));
-	button.addEventListener("click", (e2) => deleteRow(e2, e.target.parentNode.rowIndex));
 	button.classList.add("btn-remove");
-	mountButton(button, e.target);
-}
-
-function hideButton(btn, timer) {
-	clearInterval(timer);
+	button.appendChild(document.createTextNode("-"));
 	
-	btn.addEventListener("mouseover", () => {
-		clearInterval(fadeOut);
-		btn.style.opacity = "1";
+	document.getElementById("wrapper").appendChild(button);
+	setTimeout(() => button.style.opacity = 1, 0);
+	
+	button.addEventListener("click", (e2) => {
+		if(rowIndex >= table.querySelectorAll("tr").length - 1 ||
+				table.querySelectorAll("tr").length - 1 === 1) {
+			button.parentNode.removeChild(button);
+		}
+		deleteRow(e2, rowIndex)
 	});
 	
-	btn.addEventListener("mouseout", () => hideButton(btn));
-	
-	const fadeOut = setInterval(() => {
-		if(btn.style.opacity < 0) {
-			clearInterval(fadeOut);
-			try {
-				btn.parentElement.removeChild(btn);
-			} catch(e) {
-				clearInterval(fadeOut);
-			}
-		} else {
-			btn.style.opacity = +btn.style.opacity - 0.10;
-		}
-	}, 10);
-	
-	//
+	return button;
 }
 
-function mountButton(button, target) {
-	document.getElementById("wrapper").appendChild(button);
+function hideButton(btn) {
+	btn.style.opacity = "0";
 	
-	const fadeIn = setInterval(() => {
-		if(button.style.opacity >= 1) {
-			clearInterval(fadeIn);
+	setTimeout(() => {
+		if(btn.style.opacity == 0) {
+			try {
+				btn.parentElement.removeChild(btn);
+			} catch(e) {}
 		}
-		button.style.opacity = +button.style.opacity + 0.1;
-	}, 10);
-	
-	target.addEventListener("mouseout", () => hideButton(button, fadeIn));
+	}, 600);
 }
 
 function addColumn(e) {
 	e.stopPropagation();
-	hideButton(e.target);
 	
 	const trs = document.querySelectorAll(".table tr");
 	
@@ -154,10 +194,7 @@ function addColumn(e) {
 	});
 }
 
-function addRow(e) {
-	e.stopPropagation();
-	hideButton(e.target);
-	
+function addRow() {
 	const tr = document.querySelectorAll(".table tr")[0].cells;
 	const _tr = document.createElement("tr");
 	const table = document.querySelector(".table tbody");
@@ -173,10 +210,8 @@ function addRow(e) {
 
 function deleteColumn(e, cellIndex) {
 	e.stopPropagation();
-	hideButton(e.target);
 	
 	const table = document.querySelector(".table tbody");
-	console.dir(table);
 	Array.prototype.forEach.call(
 			table.children,
 			(tr) => {
@@ -192,7 +227,6 @@ function deleteColumn(e, cellIndex) {
 
 function deleteRow(e, rowIndex) {
 	e.stopPropagation();
-	hideButton(e.target);
 	
 	const table = document.querySelector(".table tbody");
 	let row;

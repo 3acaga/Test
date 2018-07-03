@@ -1,5 +1,12 @@
 $size: 50px;
 
+#wrapper {
+  background-color: white;
+  overflow: hidden;
+  display: inline-block;
+  position: relative;
+}
+
 .table {
   border: 1px solid #4DABE4;
   overflow: hidden;
@@ -13,19 +20,21 @@ $size: 50px;
   }
 }
 
-.btn {
+.btn-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  background-color: #B00100;
+  transition: all 0.6s ease;
+  color: white;
+  font-size: 1.8em;
+  font-weight: bold;
+  cursor: pointer;
 
-  &-add {
-    width: $size;
-    height: $size;
-    background-color: #B00100;
+  &:hover {
+    background-color: #C84D4C;
   }
-}
-
-#wrapper {
-  background-color: white;
-  overflow: hidden;
-  display: inline-block;
 }
 
 .btn-add {
@@ -34,28 +43,13 @@ $size: 50px;
   justify-content: center;
   position: absolute;
   background-color: #F1A417;
-  transition: 0.6s all ease;
+  transition: all 0.6s ease;
   color: white;
   font-size: 1.8em;
   font-weight: bold;
+  cursor: pointer;
 
   &:hover {
     background-color: #F5BF5C;
-  }
-}
-
-.btn-remove {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  background-color: #B00100;
-  transition: 0.6s all ease;
-  color: white;
-  font-size: 1.8em;
-  font-weight: bold;
-
-  &:hover {
-    background-color: #C84D4C;
   }
 }
