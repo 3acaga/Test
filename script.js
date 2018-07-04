@@ -182,7 +182,7 @@ class Controls {
 			this.cells.count--;
 			this.cells.visible = this.cells.count > 1;
 
-			if(this.cells.count === 1 || this.cells.current + 1 > this.cells.count) {
+			if(!this.cells.visible || this.cells.current > this.cells.count - 1) {
 				this.cells.deleteBtn.style.display = "none";
 			}
 		}
@@ -205,7 +205,7 @@ class Controls {
 			this.rows.count--;
 			this.rows.visible = this.rows.count > 1;
 			
-			if(this.rows.count === 1 || this.rows.current + 1 > this.rows.count) {
+			if(!this.rows.visible || this.rows.current > this.rows.count - 1) {
 				this.rows.deleteBtn.style.display = "none";
 			}
 		}
