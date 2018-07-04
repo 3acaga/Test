@@ -1,55 +1,83 @@
 $size: 50px;
+$borderWidth: 1px;
+$borderSpacing: 2px;
+$tdPadding: 1px;
+
+body {
+  padding: 100px;
+}
 
 #wrapper {
   background-color: white;
-  overflow: hidden;
   display: inline-block;
   position: relative;
-}
 
-.table {
-  border: 1px solid #4DABE4;
-  overflow: hidden;
-  margin: $size + 5;
-  background-color: white;
+  & > table {
+    border: 1px solid #4DABE4;
+    border-spacing: $borderSpacing;
+    background-color: white;
 
-  & > tbody > tr > * {
-    width: $size;
-    height: $size;
-    background-color: #4DABE4;
+    & > tbody > tr > * {
+      padding: $tdPadding;
+      width: $size;
+      height: $size;
+      background-color: #4DABE4;
+    }
   }
 }
 
-.btn-remove {
+.btn {
   display: flex;
+  width: $size + $tdPadding * 2;
+  height: $size + $tdPadding * 2;
   align-items: center;
   justify-content: center;
-  position: absolute;
-  background-color: #B00100;
+  //position: absolute;
   transition: all 0.6s ease;
   color: white;
   font-size: 1.8em;
   font-weight: bold;
   cursor: pointer;
 
-  &:hover {
-    background-color: #C84D4C;
+  &-add {
+    background-color: #F1A417;
+
+    &__col {
+      position: absolute;
+      top: $borderSpacing + $borderWidth;
+      right: -$size -$borderSpacing - $tdPadding * 2;
+    }
+
+    &__row {
+      position: absolute;
+      top: calc(100% + #{$borderSpacing});
+      left: $borderSpacing + $borderWidth;
+    }
+
+    &:hover {
+      background-color: #F5BF5C;
+    }
   }
-}
 
-.btn-add {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  background-color: #F1A417;
-  transition: all 0.6s ease;
-  color: white;
-  font-size: 1.8em;
-  font-weight: bold;
-  cursor: pointer;
+  &-remove {
+    background-color: #B00100;
 
-  &:hover {
-    background-color: #F5BF5C;
+    &__col {
+      position: absolute;
+      top: -$size - $borderSpacing - $tdPadding * 2;
+      left: $borderSpacing + $borderWidth;
+      opacity: 0;
+    }
+
+    &__row {
+      position: absolute;
+      top: $borderSpacing + $borderWidth;
+      left: -$size -$borderSpacing - $tdPadding * 2;
+      opacity: 0;
+    }
+
+    &:hover {
+      background-color: #C84D4C;
+    }
   }
 }

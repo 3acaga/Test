@@ -1,244 +1,213 @@
 window.onload = () => {
 	
-	showAddColumnButton();
-	showAddRowButton();
-	
-	const tds = document.querySelectorAll(".table td");
-	tds.forEach((td) => td.addEventListener("mouseover", showButtons));
+	new Controls();
 };
 
-const showButtons = (() => {
-	let rowIndex, colIndex;
-	let deleteRowBtn, DeleteColBtn;
-	let timeout;
-	
-	return (e) => {
-		clearInterval(timeout);
+class Controls {
+	constructor() {
+		this.table = document.querySelector(".table tbody");
 		
-		if(e.target.parentNode.parentNode.children.length > 1) {
+		const tdStyle = getComputedStyle(this.table.querySelector("td"));
+		
+		const removeRowButton = document.querySelector(".btn-remove__row");
+		const removeCellButton = document.querySelector(".btn-remove__col");
+		
+		const rowCount = this.table.children.length;
+		const cellCount = this.table.firstElementChild.children.length;
+		
+		/////////////
+		let row = 0;
+		let cell = 0;
+		/////////////
+		
+		this.rows = {
+			count: rowCount,
+			deleteBtn: removeRowButton,
+			visible: rowCount > 1,
 			
-			if(rowIndex !== e.target.parentNode.rowIndex) {
-				//row changed
-				try {
-					hideButton(deleteRowBtn);
-				} catch(e) {}
-				
-				rowIndex = e.target.parentNode.rowIndex;
-				deleteRowBtn = showDeleteRowButton(e, rowIndex);
-				
+			baseY: parseInt(getComputedStyle(removeRowButton).top),
+			stepY: (
+					parseInt(tdStyle.height)
+					+ 2 * parseInt(tdStyle.padding)
+					+ parseInt(tdStyle.borderSpacing)
+			),
+		};
+		Object.defineProperty(this.rows, "current", {
+			get: () => row,
+			set: (x) => {
+				row = x;
+				this.rows.deleteBtn.style.top = `${this.rows.baseY + row * this.rows.stepY}px`;
 			}
-		}
+		});
 		
-		if(e.target.parentNode.cells.length > 1) {
-			//coll changed
-			if(colIndex !== e.target.cellIndex) {
-				try {
-					hideButton(DeleteColBtn);
-				} catch(e) {}
-				
-				colIndex = e.target.cellIndex;
-				DeleteColBtn = showDeleteColumnButton(e, colIndex);
-				
+		this.cells = {
+			count: cellCount,
+			deleteBtn: removeCellButton,
+			visible: cellCount > 1,
+			
+			baseX: parseInt(getComputedStyle(removeCellButton).left),
+			stepX: (
+					parseInt(tdStyle.width) +
+					2 * parseInt(tdStyle.padding) +
+					parseInt(tdStyle.borderSpacing)
+			),
+		};
+		Object.defineProperty(this.cells, "current", {
+			get: () => cell,
+			set: (x) => {
+				cell = x;
+				this.cells.deleteBtn.style.left = `${this.cells.baseX + cell * this.cells.stepX}px`;
 			}
-		}
+		});
 		
-		timeout = setInterval(() => {
-			hideButton(deleteRowBtn);
-			hideButton(DeleteColBtn);
-			rowIndex = colIndex = undefined;
-		}, 2000);
+		document.querySelector(".btn-add__col").addEventListener("click", this.addColumn());
+		document.querySelector(".btn-add__row").addEventListener("click", this.addRow());
+		
+		removeCellButton.addEventListener("click", this.deleteColumn());
+		removeRowButton.addEventListener("click", this.deleteRow());
+		
+		document.querySelector(".table").addEventListener("mouseover", this.setIndices());
+		
+		document.querySelector("#wrapper").addEventListener("mouseleave", this.hideButtons());
+		
+		document.querySelector("#wrapper").addEventListener("mouseenter", this.showButtons());
 	}
-})();
-
-function showAddColumnButton() {
-	const table = document.querySelector(".table");
 	
-	const button = document.createElement("div");
-	button.appendChild(document.createTextNode("+"));
-	button.classList.add("btn-add");
-	button.addEventListener("click", addColumn);
-	
-	document.getElementById("wrapper").appendChild(button);
-	
-	const tstyle = getComputedStyle(table);
-	const td = table.querySelector("td");
-	
-	Object.assign(button.style, {
-		right: `${parseInt(tstyle.marginRight) -
-							td.offsetWidth -
-							parseInt(tstyle.borderSpacing.split(" ")[0])
-						}px`,
-		top: `${parseInt(tstyle.marginTop) +
-						parseInt(tstyle.borderTopWidth) +
-						parseInt(tstyle.borderSpacing.split(" ")[1])
-					}px`,
-		width: td.offsetWidth + "px",
-		height: td.offsetHeight + "px"
-	});
-}
-
-function showAddRowButton() {
-	const table = document.querySelector(".table");
-	
-	const button = document.createElement("div");
-	button.appendChild(document.createTextNode("+"));
-	button.classList.add("btn-add");
-	button.addEventListener("click", addRow);
-	
-	document.getElementById("wrapper").appendChild(button);
-	
-	const tstyle = getComputedStyle(table);
-	const td = table.querySelector("td");
-	
-	Object.assign(button.style, {
-		bottom: `${	parseInt(tstyle.marginBottom) -
-								td.offsetHeight -
-								parseInt(tstyle.borderSpacing.split(" ")[0])
-							}px`,
-		left: `${	parseInt(tstyle.marginLeft) +
-							parseInt(tstyle.borderLeftWidth) +
-							parseInt(tstyle.borderSpacing.split(" ")[1])
-						}px`,
-		width: td.offsetWidth + "px",
-		height: td.offsetHeight + "px"
-	});
-}
-
-function showDeleteColumnButton(e, colIndex = -1) {
-	e.stopPropagation();
-	
-	const table = document.querySelector(".table");
-	const width = document.querySelector(".table td").offsetWidth;
-	const height = document.querySelector(".table td").offsetHeight;
-	const button = document.createElement("div");
-	
-	Object.assign(button.style, {
-		width: `${width}px`,
-		height: `${height}px`,
-		left: `${table.offsetLeft + e.target.offsetLeft + 1}px`,
-		top: `${table.offsetTop - e.target.offsetHeight - 1}px`,
-		opacity: "0"
-	});
-	button.classList.add("btn-remove");
-	button.appendChild(document.createTextNode("-"));
-	
-	document.getElementById("wrapper").appendChild(button);
-	setTimeout(() => button.style.opacity = 1, 0);
-	
-	button.addEventListener("click", (e2) => {
-		if(	colIndex >= table.querySelector("tr").children.length - 1 ||
-				table.querySelector("tr").children.length - 1 === 1) {
+	setIndices() {
+		//prevent losing context
+		return (e) => {
+			e.stopPropagation();
 			
-			button.parentNode.removeChild(button);
+			const row = e.target.parentNode.rowIndex;
+			const cell = e.target.cellIndex;
+			
+			// if !table spacing
+			if(row !== undefined && cell !== undefined) {
+				this.rows.current = row;
+				this.cells.current = cell;
+			}
 		}
-		deleteColumn(e2, colIndex);
-	});
+	}
 	
-	return button;
-}
-
-function showDeleteRowButton(e, rowIndex = -1) {
-	e.stopPropagation();
-	
-	const table = document.querySelector(".table");
-	const width = document.querySelector(".table td").offsetWidth;
-	const height = document.querySelector(".table td").offsetHeight;
-	const button = document.createElement("div");
-	
-	Object.assign(button.style, {
-		width: `${width}px`,
-		height: `${height}px`,
-		left: `${table.offsetLeft - e.target.offsetWidth - 1}px`,
-		top: `${table.offsetTop + e.target.offsetTop + 1}px`,
-		opacity: 0
-	});
-	button.classList.add("btn-remove");
-	button.appendChild(document.createTextNode("-"));
-	
-	document.getElementById("wrapper").appendChild(button);
-	setTimeout(() => button.style.opacity = 1, 0);
-	
-	button.addEventListener("click", (e2) => {
-		if(rowIndex >= table.querySelectorAll("tr").length - 1 ||
-				table.querySelectorAll("tr").length - 1 === 1) {
-			button.parentNode.removeChild(button);
+	showButtons() {
+		return () => {
+			clearTimeout(this.timer);
+			
+			if(this.rows.visible) {
+				this.rows.deleteBtn.style.display = "";
+				this.rows.deleteBtn.style.opacity = 1;
+			}
+			
+			if(this.cells.visible) {
+				this.cells.deleteBtn.style.display = "";
+				this.cells.deleteBtn.style.opacity = 1;
+			}
 		}
-		deleteRow(e2, rowIndex)
-	});
+	}
 	
-	return button;
-}
-
-function hideButton(btn) {
-	btn.style.opacity = "0";
-	
-	setTimeout(() => {
-		if(btn.style.opacity == 0) {
-			try {
-				btn.parentElement.removeChild(btn);
-			} catch(e) {}
-		}
-	}, 600);
-}
-
-function addColumn(e) {
-	e.stopPropagation();
-	
-	const trs = document.querySelectorAll(".table tr");
-	
-	trs.forEach((tr) => {
-		let td = document.createElement("td");
-		td.addEventListener("mouseover", showButtons);
+	hideButtons() {
 		
-		tr.appendChild(td);
-	});
-}
+		return () => {
+			this.rows.deleteBtn.style.opacity = 0;
+			this.cells.deleteBtn.style.opacity = 0;
+			
+			this.timer = setTimeout(() => {
+				this.rows.deleteBtn.style.display = "none";
+				this.cells.deleteBtn.style.display = "none";
+			}, 600);
+		}
+	}
+	
+	addColumn() {
+		//prevent losing context
+		return (e) => {
+			e.stopPropagation();
+			
+			const trs = document.querySelectorAll(".table tr");
+			
+			trs.forEach((tr) => {
+				let td = document.createElement("td");
+				tr.appendChild(td);
+			});
+			
+			this.cells.count++;
+			this.cells.visible = this.cells.count > 1;
+			
+			this.cells.deleteBtn.style.display = "";
+			this.cells.deleteBtn.style.opacity = 1;
+		}
+	}
+	
+	addRow() {
+		//prevent losing context
+		return (e) => {
+			e.stopPropagation();
+			
+			const cellCount = document.querySelector(".table tr").cells.length;
+			
+			
+			const _tr = document.createElement("tr");
+			
+			for(let i = 0; i < cellCount; i++) {
+				_tr.appendChild(document.createElement("td"));
+			}
+			
+			this.table.appendChild(_tr);
+			
+			this.rows.count++;
+			this.rows.visible = this.rows.count > 1;
+			
+			this.rows.deleteBtn.style.display = "";
+			this.rows.deleteBtn.style.opacity = 1;
+		}
+	}
+	
+	deleteColumn() {
+		//prevent losing context
+		return (e) => {
+			e.stopPropagation();
+			
+			Array.prototype.forEach.call(
+					this.table.children,
+					(tr) => {
+						Array.prototype.forEach.call(tr.cells, (td) => {
+									if(td.cellIndex === this.cells.current) {
+										tr.removeChild(td);
+									}
+								}
+						);
+					}
+			);
+			
+			this.cells.count--;
+			this.cells.visible = this.cells.count > 1;
 
-function addRow() {
-	const tr = document.querySelectorAll(".table tr")[0].cells;
-	const _tr = document.createElement("tr");
-	const table = document.querySelector(".table tbody");
+			if(this.cells.count === 1 || this.cells.current + 1 > this.cells.count) {
+				this.cells.deleteBtn.style.display = "none";
+			}
+		}
+	}
 	
-	Array.prototype.forEach.call(tr, () => {
-		let td = document.createElement("td");
-		td.addEventListener("mouseover", showButtons);
-		_tr.appendChild(td);
-	});
-	
-	table.appendChild(_tr);
-}
-
-function deleteColumn(e, cellIndex) {
-	e.stopPropagation();
-	
-	const table = document.querySelector(".table tbody");
-	Array.prototype.forEach.call(
-			table.children,
-			(tr) => {
-				Array.prototype.forEach.call(tr.cells, (td) => {
-							if(td.cellIndex === cellIndex) {
-								tr.removeChild(td);
-							}
+	deleteRow() {
+		//prevent losing context
+		return (e) => {
+			e.stopPropagation();
+			
+			Array.prototype.forEach.call(
+					this.table.children,
+					(tr) => {
+						if(tr.rowIndex === this.rows.current) {
+							this.table.removeChild(tr);
 						}
-				);
+					}
+			);
+			
+			this.rows.count--;
+			this.rows.visible = this.rows.count > 1;
+			
+			if(this.rows.count === 1 || this.rows.current + 1 > this.rows.count) {
+				this.rows.deleteBtn.style.display = "none";
 			}
-	);
-}
-
-function deleteRow(e, rowIndex) {
-	e.stopPropagation();
-	
-	const table = document.querySelector(".table tbody");
-	let row;
-	
-	Array.prototype.forEach.call(
-			table.children,
-			(tr) => {
-				if(tr.rowIndex === rowIndex) {
-					row = tr;
-				}
-			}
-	);
-	
-	table.removeChild(row);
+		}
+	}
 }
