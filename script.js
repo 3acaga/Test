@@ -81,16 +81,15 @@ class Controls {
 		const table = e.currentTarget;
 		const wrapper = table.parentNode;
 		
-		const {offsetTop: top, offsetLeft: left} = wrapper;
-		const shiftX = e.pageX - left;
-		const shiftY = e.pageY - top;
+		const shiftX = e.pageX - wrapper.offsetLeft;
+		const shiftY = e.pageY - wrapper.offsetTop;
 		
 		const mouseMove = (e) => {
 			wrapper.style.left = `${e.pageX - shiftX}px`;
 			wrapper.style.top = `${e.pageY - shiftY}px`;
 		};
 		
-		const clearListeners = (e) => {
+		const clearListeners = () => {
 			document.removeEventListener("mousemove", mouseMove);
 			document.removeEventListener("mouseup", clearListeners);
 		};
