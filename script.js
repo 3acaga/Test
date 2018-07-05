@@ -90,12 +90,13 @@ class Controls {
 			wrapper.style.top = `${e.pageY - shiftY}px`;
 		};
 		
-		document.addEventListener("mousemove", mouseMove);
-		
-		table.onmouseup = () => {
+		const clearListeners = (e) => {
 			document.removeEventListener("mousemove", mouseMove);
-			table.onmouseup = null;
+			document.removeEventListener("mouseup", clearListeners);
 		};
+		
+		document.addEventListener("mousemove", mouseMove);
+		document.addEventListener("mouseup", clearListeners);
 	}
 	
 	setIndices(e) {
