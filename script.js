@@ -6,6 +6,11 @@ window.onload = () => {
 class Controls {
 	constructor() {
 		this.table = document.querySelector(".table tbody");
+		this.drag = {
+			inProcess: false,
+			shiftX: 0,
+			shiftY: 0
+		};
 		
 		const tdStyle = getComputedStyle(this.table.querySelector("td"));
 		const table = document.querySelector(".table");
@@ -72,30 +77,29 @@ class Controls {
 		wrapper.addEventListener("mouseleave", this.hideButtons.bind(this));
 		wrapper.addEventListener("mouseenter", this.showButtons.bind(this));
 		
-		table.addEventListener("mousedown", this.drag);
+		
+		table.addEventListener("mousedown", this._mouseDown.bind(this, wrapper));
+		document.addEventListener("mousemove", this._mouseMove.bind(this, wrapper));
+		document.addEventListener("mouseup", this._mouseUp.bind(this));
 		
 		table.ondragstart = () => false;
 	}
 	
-	drag(e) {
-		const table = e.currentTarget;
-		const wrapper = table.parentNode;
+	_mouseDown(wrapper, e) {
+		this.drag.inProcess = true;
+		this.drag.shiftX = e.pageX - wrapper.offsetLeft;
+		this.drag.shiftY = e.pageY - wrapper.offsetTop;
+	}
+	
+	_mouseMove(wrapper, e) {
+		if(!this.drag.inProcess) return;
 		
-		const shiftX = e.pageX - wrapper.offsetLeft;
-		const shiftY = e.pageY - wrapper.offsetTop;
-		
-		const mouseMove = (e) => {
-			wrapper.style.left = `${e.pageX - shiftX}px`;
-			wrapper.style.top = `${e.pageY - shiftY}px`;
-		};
-		
-		const clearListeners = () => {
-			document.removeEventListener("mousemove", mouseMove);
-			document.removeEventListener("mouseup", clearListeners);
-		};
-		
-		document.addEventListener("mousemove", mouseMove);
-		document.addEventListener("mouseup", clearListeners);
+		wrapper.style.left = `${e.pageX - this.drag.shiftX}px`;
+		wrapper.style.top = `${e.pageY - this.drag.shiftY}px`;
+	}
+	
+	_mouseUp() {
+		this.drag.inProcess = false;
 	}
 	
 	setIndices(e) {

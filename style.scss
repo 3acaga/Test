@@ -15,8 +15,8 @@ body {
   & > table {
     border: 1px solid #4DABE4;
     border-spacing: $borderSpacing;
-    table-layout: fixed;
     background-color: white;
+    table-layout: fixed;
 
     cursor: -webkit-grab;
     cursor: -moz-grab;
@@ -28,9 +28,10 @@ body {
       cursor: grabbing;
     }
 
-    & > tbody > tr > * {
+    & td {
       padding: $tdPadding;
-      width: $size;
+      min-width: $size;
+      max-width: $size;
       height: $size;
       background-color: #4DABE4;
     }
