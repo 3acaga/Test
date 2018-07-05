@@ -72,12 +72,12 @@ class Controls {
 		wrapper.addEventListener("mouseleave", this.hideButtons.bind(this));
 		wrapper.addEventListener("mouseenter", this.showButtons.bind(this));
 		
-		table.addEventListener("mousedown", this.dragStart);
+		table.addEventListener("mousedown", this.drag);
 		
 		table.ondragstart = () => false;
 	}
 	
-	dragStart(e) {
+	drag(e) {
 		const table = e.currentTarget;
 		const wrapper = table.parentNode;
 		
