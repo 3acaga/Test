@@ -4,11 +4,19 @@ body {
 #wrapper {
   background-color: white;
   display: inline-block;
-  position: relative; }
+  position: absolute; }
   #wrapper > table {
     border: 1px solid #4DABE4;
     border-spacing: 2px;
-    background-color: white; }
+    table-layout: fixed;
+    background-color: white;
+    cursor: -webkit-grab;
+    cursor: -moz-grab;
+    cursor: grab; }
+    #wrapper > table.dragging {
+      cursor: -webkit-grabbing;
+      cursor: -moz-grabbing;
+      cursor: grabbing; }
     #wrapper > table > tbody > tr > * {
       padding: 1px;
       width: 50px;

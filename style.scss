@@ -10,12 +10,23 @@ body {
 #wrapper {
   background-color: white;
   display: inline-block;
-  position: relative;
+  position: absolute;
 
   & > table {
     border: 1px solid #4DABE4;
     border-spacing: $borderSpacing;
+    table-layout: fixed;
     background-color: white;
+
+    cursor: -webkit-grab;
+    cursor: -moz-grab;
+    cursor: grab;
+
+    &.dragging {
+      cursor: -webkit-grabbing;
+      cursor: -moz-grabbing;
+      cursor: grabbing;
+    }
 
     & > tbody > tr > * {
       padding: $tdPadding;
